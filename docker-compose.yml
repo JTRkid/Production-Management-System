@@ -1,0 +1,21 @@
+version: "3.8"
+
+services:
+  backend:
+    build: ./backend
+    container_name: prod-backend
+    volumes:
+      - ./backend/db.sqlite3:/app/db.sqlite3       # SQLite 数据持久化
+      - ./backend/media:/app/media                   # 上传文件持久化
+    environment:
+      - DJANGO_SETTINGS_MODULE=teach_platform.settings
+    restart: unless-stopped
+
+  frontend:
+    build: ./frontend
+    container_name: prod-frontend
+    ports:
+      - "8080:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
