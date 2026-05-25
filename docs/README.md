@@ -15,7 +15,7 @@
 | ↳ [一键启动](#2-一键启动推荐) | start.cmd 双击启动 |
 | ↳ [手动启动](#3-手动启动) | 前后端分别启动 |
 | ↳ [访问系统](#4-访问系统) | 地址与默认账号 |
-| ↳ [Docker 部署](#5-docker-部署可选) | docker-compose 容器化部署 |
+| ↳ [Docker 部署](#5-docker-部署生产环境) | docker-compose 生产环境容器化部署 |
 | ↳ [Ubuntu 24 生产部署](#6-ubuntu-24-生产环境部署) | 完整生产环境搭建 |
 | [API 接口文档](#api-接口文档) | 全部 REST API 接口说明 |
 | [操作手册](#操作手册) | 典型业务流程与常用操作 |
@@ -42,7 +42,7 @@
 生产管理系统/
 ├── backend/                        # Django 后端
 │   ├── teach_platform/             # 项目配置
-│   │   ├── settings.py             # Django 配置
+│   │   ├── settings.py             # Django 配置（支持环境变量）
 │   │   └── urls.py                 # 根路由
 │   ├── apps/                       # 业务应用
 │   │   ├── accounts/               # 用户认证与系统管理
@@ -55,6 +55,8 @@
 │   │   ├── quality/                # 质量管理（检验标准/记录）
 │   │   ├── inventory/              # 库存管理（仓库/库存/出入库）
 │   │   └── dashboard/              # 报表看板（聚合查询）
+│   ├── Dockerfile                  # 后端容器镜像
+│   ├── entrypoint.sh               # 容器启动脚本
 │   ├── media/                      # 媒体文件
 │   ├── manage.py                   # Django 管理入口
 │   ├── requirements.txt            # Python 依赖
@@ -77,6 +79,8 @@
 │   │   │   ├── quality/            # 质量管理（标准/检验）
 │   │   │   └── inventory/          # 库存管理（仓库/库存/出入库）
 │   │   └── utils/constants.js      # 常量映射
+│   ├── Dockerfile                  # 前端容器镜像
+│   ├── nginx.conf                  # Nginx 配置（反向代理 + WebSocket）
 │   ├── public/favicon.svg          # 网站图标
 │   ├── index.html                  # HTML 入口
 │   ├── vite.config.js              # Vite 构建配置
@@ -86,6 +90,8 @@
 │   ├── README.md                   # 本文件
 │   ├── SRS-生产管理系统需求规格说明书.md
 │   └── 需求文档.md
+├── docker-compose.yml              # Docker 生产编排
+├── .env.example                    # 生产环境变量模板
 ├── start.cmd                       # Windows 一键启动脚本
 └── stop.cmd                        # Windows 一键停止脚本
 ```
@@ -180,44 +186,294 @@ npm run dev
 - 后端 API：http://localhost:8000/api/v1/
 - 默认账号：`admin` / `123456`
 
-### 5. Docker 部署（可选）
+### 5. Docker 部署（生产环境）
+
+项目支持 Docker Compose 一键部署，包含 4 个服务：MySQL、Redis、后端（Gunicorn）、前端（Nginx）。
+
+#### 5.1 部署架构
+
+```
+浏览器(HTTPS)
+    │
+    ▼
+┌───────────────────────────────────────────┐
+│  Nginx (prod-frontend :80)                │
+│  ├── /          → Vue SPA 静态文件        │
+│  ├── /static/   → Django collectstatic    │
+│  ├── /api/      → proxy → backend:8000    │
+│  └── /ws/       → proxy → backend:8000    │
+└──────────────┬────────────────────────────┘
+               │
+               ▼
+┌───────────────────────────────────────────┐
+│  Gunicorn + Uvicorn (prod-backend :8000)  │
+│  Django REST Framework + Channels         │
+└───────┬──────────────────────┬────────────┘
+        │                      │
+        ▼                      ▼
+┌───────────────┐   ┌───────────────┐
+│  MySQL 8.0    │   │  Redis 7      │
+│  (业务数据)    │   │  (Channel 层) │
+└───────────────┘   └───────────────┘
+```
+
+#### 5.2 环境要求
+
+- Docker 20.10+
+- Docker Compose v2+
+- 服务器内存建议 2GB+
+
+#### 5.3 创建环境变量文件
+
+项目根目录提供了 `.env.example` 模板，复制后填入真实值：
 
 ```bash
-# 在项目根目录执行
-docker-compose up --build -d
+cp .env.example .env
 ```
 
-部署架构：
+编辑 `.env`，配置以下变量：
 
+```env
+# ── Django ──
+DJANGO_SECRET_KEY=替换为一串很长的随机字符串（可用 python -c "from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())" 生成）
+DJANGO_DEBUG=False
+DJANGO_ALLOWED_HOSTS=your-domain.com,www.your-domain.com
+
+# ── CORS（逗号分隔的前端域名）──
+CORS_ALLOWED_ORIGINS=https://your-domain.com
+
+# ── MySQL ──
+MYSQL_HOST=mysql
+MYSQL_PORT=3306
+MYSQL_DATABASE=prod_mgmt
+MYSQL_USER=prod_user
+MYSQL_PASSWORD=替换为强密码
+MYSQL_ROOT_PASSWORD=替换为强密码
+
+# ── Redis ──
+REDIS_URL=redis://redis:6379/0
 ```
-                    ┌──────────────────────────────────┐
-                    │       Docker Compose              │
-                    │                                   │
-  port 8080 ────────┤  frontend (nginx:alpine)          │
-                    │   ├─ SPA 静态文件                  │
-                    │   └─ /api/ → proxy_pass backend   │
-                    │               │                    │
-                    │  backend (python:3.12-slim)       │
-                    │   ├─ Gunicorn (2 workers, :8000)  │
-                    │   ├─ SQLite (volume mount)         │
-                    │   └─ media/ (volume mount)         │
-                    └──────────────────────────────────┘
-```
 
-访问 `http://localhost:8080`，默认账号 `admin` / `123456`。
+> **注意**：`.env` 包含敏感密码，已加入 `.gitignore`，不会提交到代码仓库。
 
-数据持久化通过 Docker volume 实现：
-- `./backend/db.sqlite3` — 数据库文件
-- `./backend/media/` — 上传文件
-
-常用命令：
+#### 5.4 构建并启动
 
 ```bash
-docker-compose up --build -d   # 构建并后台启动
-docker-compose logs -f          # 查看日志
-docker-compose down             # 停止服务（数据不丢失）
-docker-compose restart          # 重启服务
+# 在项目根目录执行（包含 docker-compose.yml 的目录）
+docker-compose up -d --build
 ```
+
+首次启动会自动执行以下操作：
+1. 拉取 MySQL 8.0、Redis 7、Python 3.12、Node 20、Nginx 镜像
+2. 构建后端镜像：安装 Python 依赖 → 收集静态文件 → 数据库迁移 → 填充种子数据
+3. 构建前端镜像：npm ci → npm run build → 复制 dist 到 Nginx
+4. 启动全部 4 个服务，MySQL 和 Redis 就绪后后端才启动（healthcheck）
+
+#### 5.5 创建管理员账号
+
+种子数据已包含默认管理员 `admin / 123456`。如需创建额外管理员：
+
+```bash
+docker exec -it prod-backend python manage.py createsuperuser
+```
+
+#### 5.6 访问系统
+
+- 前端地址：`http://your-server-ip`（80 端口）
+- 后端 API：`http://your-server-ip/api/v1/`
+- 默认账号：`admin` / `123456`
+
+#### 5.7 数据持久化
+
+| 数据 | 存储方式 | 说明 |
+|------|----------|------|
+| MySQL 数据 | Docker named volume `mysql_data` | `docker-compose down` 不丢失，`down -v` 会删除 |
+| Redis 数据 | Docker named volume `redis_data` | 缓存数据，丢失不影响业务 |
+| 上传文件 | 宿主机挂载 `./backend/media/` | 直接映射到宿主机目录 |
+| 静态文件 | Docker named volume `static_files` | 后端 collectstatic 产物，前端 Nginx 共享读取 |
+
+#### 5.8 常用运维命令
+
+```bash
+# 查看所有服务状态
+docker-compose ps
+
+# 查看实时日志（所有服务）
+docker-compose logs -f
+
+# 查看单个服务日志
+docker-compose logs -f backend
+docker-compose logs -f mysql
+
+# 重启所有服务
+docker-compose restart
+
+# 重启单个服务
+docker-compose restart backend
+
+# 停止所有服务（数据不丢失）
+docker-compose down
+
+# 停止并删除所有数据（慎用！会清除数据库）
+docker-compose down -v
+
+# 重新构建并启动（代码更新后）
+docker-compose up -d --build
+
+# 进入后端容器调试
+docker exec -it prod-backend bash
+
+# 在容器内执行 Django 管理命令
+docker exec -it prod-backend python manage.py shell
+docker exec -it prod-backend python manage.py dbshell
+```
+
+#### 5.9 更新部署
+
+代码更新后，执行以下命令重新部署：
+
+```bash
+cd /path/to/生产管理系统
+
+# 拉取最新代码
+git pull
+
+# 重新构建并启动（仅重建有变更的服务）
+docker-compose up -d --build
+
+# 查看迁移是否成功
+docker-compose logs backend | grep "迁移"
+```
+
+#### 5.10 数据库备份、恢复与自动清理
+
+**手动备份：**
+
+```bash
+# 导出数据库（文件名含日期）
+docker exec prod-mysql mysqldump -u root -p"$MYSQL_ROOT_PASSWORD" prod_mgmt > backup_$(date +%Y%m%d).sql
+```
+
+**手动恢复：**
+
+```bash
+# 从备份文件恢复（会覆盖当前数据）
+docker exec -i prod-mysql mysql -u root -p"$MYSQL_ROOT_PASSWORD" prod_mgmt < backup_20260526.sql
+```
+
+**配置每日自动备份 + 循环清理：**
+
+```bash
+# 1. 创建备份目录
+sudo mkdir -p /data/backup/mysql
+
+# 2. 用 vim 创建备份脚本
+sudo vim /data/backup/mysql/backup.sh
+```
+
+写入以下内容：
+
+```bash
+#!/bin/bash
+set -e
+
+BACKUP_DIR="/data/backup/mysql"
+DATE=$(date +%Y%m%d_%H%M%S)
+KEEP_DAYS=7   # 保留最近 7 天，超过自动删除
+
+# 读取 .env 中的密码
+MYSQL_ROOT_PASSWORD=$(grep MYSQL_ROOT_PASSWORD /path/to/生产管理系统/.env | cut -d= -f2)
+
+# 执行备份（gzip 压缩）
+docker exec prod-mysql mysqldump -u root -p"$MYSQL_ROOT_PASSWORD" prod_mgmt \
+  | gzip > "$BACKUP_DIR/prod_mgmt_${DATE}.sql.gz"
+
+# 清理超过 KEEP_DAYS 天的旧备份
+find "$BACKUP_DIR" -name "prod_mgmt_*.sql.gz" -mtime +$KEEP_DAYS -delete
+
+echo "[$(date)] 备份完成: prod_mgmt_${DATE}.sql.gz，已清理 ${KEEP_DAYS} 天前的旧备份"
+```
+
+```bash
+# 3. 设置脚本权限
+sudo chmod +x /data/backup/mysql/backup.sh
+
+# 4. 加入 crontab：每天凌晨 3 点执行
+sudo crontab -e
+```
+
+在 crontab 末尾添加一行：
+
+```
+0 3 * * * /data/backup/mysql/backup.sh >> /data/backup/mysql/backup.log 2>&1
+```
+
+```bash
+# 5. 验证 crontab 是否写入
+sudo crontab -l
+```
+
+> **注意**：将脚本中 `/path/to/生产管理系统/` 替换为项目实际路径。`KEEP_DAYS=7` 表示只保留最近 7 天的备份，可按需修改。
+
+**验证备份脚本：**
+
+```bash
+# 手动执行一次，确认正常
+sudo /data/backup/mysql/backup.sh
+
+# 检查备份文件
+ls -lh /data/backup/mysql/
+
+# 检查日志
+cat /data/backup/mysql/backup.log
+```
+
+**备份文件说明：**
+
+```
+/data/backup/mysql/
+├── backup.sh                          # 备份脚本
+├── backup.log                         # 执行日志
+├── prod_mgmt_20260526_030000.sql.gz   # 自动备份（gzip 压缩）
+├── prod_mgmt_20260525_030000.sql.gz
+├── prod_mgmt_20260524_030000.sql.gz
+└── ...                                # 超过 7 天的会被自动删除
+```
+
+#### 5.11 配置 HTTPS（可选）
+
+如需 HTTPS，在 `docker-compose.yml` 的 frontend 服务中挂载 SSL 证书，并修改 `nginx.conf`：
+
+1. 将证书文件放到项目目录（如 `nginx/ssl/`）
+
+2. `docker-compose.yml` 的 frontend volumes 加一行：
+   ```yaml
+   - ./nginx/ssl:/etc/nginx/ssl:ro
+   ```
+
+3. `nginx.conf` 修改为监听 443：
+   ```nginx
+   server {
+       listen 443 ssl;
+       server_name your-domain.com;
+       ssl_certificate     /etc/nginx/ssl/fullchain.pem;
+       ssl_certificate_key /etc/nginx/ssl/privkey.pem;
+       # ... 其余配置不变
+   }
+
+   server {
+       listen 80;
+       server_name your-domain.com;
+       return 301 https://$host$request_uri;
+   }
+   ```
+
+4. 重建前端镜像：
+   ```bash
+   docker-compose up -d --build frontend
+   ```
+
+或使用免费的 Let's Encrypt 证书 + certbot 自动续期。
 
 ### 6. Ubuntu 24 生产环境部署
 

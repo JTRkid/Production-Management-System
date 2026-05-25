@@ -1,4 +1,14 @@
-"""Django 项目配置文件 — 数据库、JWT、CORS、Channels 等"""
+"""Django 项目配置文件 — 数据库、JWT、CORS、Channels 等
+
+环境变量说明（不设置时使用开发默认值）：
+  DJANGO_SECRET_KEY   — 生产环境必须设置
+  DJANGO_DEBUG        — 生产环境设为 False
+  DJANGO_ALLOWED_HOSTS — 逗号分隔的域名列表
+  MYSQL_HOST          — 设置后切换到 MySQL，不设置则用 SQLite
+  MYSQL_PORT / MYSQL_DATABASE / MYSQL_USER / MYSQL_PASSWORD
+  REDIS_URL           — 设置后启用 Redis Channel Layer
+  CORS_ALLOWED_ORIGINS — 逗号分隔的前端域名
+"""
 
 import os
 from datetime import timedelta
@@ -6,14 +16,21 @@ from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# WARNING: 生产环境请更换为强随机密钥并移出代码仓库
-SECRET_KEY = 'django-insecure-prod-mgmt-secret-key-change-in-production-2026'
+# 安全密钥 — 生产环境必须通过环境变量注入
+SECRET_KEY = os.environ.get(
+    'DJANGO_SECRET_KEY',
+    'django-insecure-prod-mgmt-secret-key-change-in-production-2026',
+)
 
-# WARNING: 生产环境必须设为 False
-DEBUG = True
+# 调试模式 — 生产环境设为 DJANGO_DEBUG=False
+DEBUG = os.environ.get('DJANGO_DEBUG', 'True') == 'True'
 
-# WARNING: 生产环境应限制为实际域名
-ALLOWED_HOSTS = ['*']
+# 允许的主机 — 生产环境设置实际域名，如 "your.com,www.your.com"
+ALLOWED_HOSTS = [
+    h.strip()
+    for h in os.environ.get('DJANGO_ALLOWED_HOSTS', '*').split(',')
+    if h.strip()
+]
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -73,13 +90,29 @@ TEMPLATES = [
 WSGI_APPLICATION = 'teach_platform.wsgi.application'
 ASGI_APPLICATION = 'teach_platform.asgi.application'
 
-# Database - SQLite (本地开发)
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+# Database — 设置 MYSQL_HOST 环境变量后自动切换 MySQL，否则使用 SQLite（开发）
+if os.environ.get('MYSQL_HOST'):
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.mysql',
+            'NAME': os.environ.get('MYSQL_DATABASE', 'prod_mgmt'),
+            'USER': os.environ.get('MYSQL_USER', 'root'),
+            'PASSWORD': os.environ.get('MYSQL_PASSWORD', ''),
+            'HOST': os.environ['MYSQL_HOST'],
+            'PORT': os.environ.get('MYSQL_PORT', '3306'),
+            'OPTIONS': {
+                'charset': 'utf8mb4',
+                'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
+            },
+        }
     }
-}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
 
 AUTH_USER_MODEL = 'accounts.User'
 
@@ -100,9 +133,13 @@ MEDIA_ROOT = BASE_DIR / 'media'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# CORS
-# WARNING: 生产环境应限制为实际前端域名，而非允许所有来源
-CORS_ALLOW_ALL_ORIGINS = True
+# CORS — 生产环境通过 CORS_ALLOWED_ORIGINS 环境变量限制来源
+_cors_origins = os.environ.get('CORS_ALLOWED_ORIGINS', '')
+if _cors_origins:
+    CORS_ALLOW_ALL_ORIGINS = False
+    CORS_ALLOWED_ORIGINS = [o.strip() for o in _cors_origins.split(',') if o.strip()]
+else:
+    CORS_ALLOW_ALL_ORIGINS = True
 
 # REST Framework — 全局默认配置
 REST_FRAMEWORK = {
@@ -133,14 +170,23 @@ SIMPLE_JWT = {
     'AUTH_HEADER_TYPES': ('Bearer',),
 }
 
-# Channels
-# WARNING: InMemoryChannelLayer 仅适用于开发/单进程，生产环境应使用 Redis
-CHANNEL_LAYERS = {
-    'default': {
-        'BACKEND': 'channels.layers.InMemoryChannelLayer',
-    },
-}
+# Channels — 设置 REDIS_URL 后自动切换 Redis，否则使用内存（开发/单进程）
+_redis_url = os.environ.get('REDIS_URL')
+if _redis_url:
+    CHANNEL_LAYERS = {
+        'default': {
+            'BACKEND': 'channels_redis.core.RedisChannelLayer',
+            'CONFIG': {'hosts': [_redis_url]},
+        }
+    }
+else:
+    CHANNEL_LAYERS = {
+        'default': {
+            'BACKEND': 'channels.layers.InMemoryChannelLayer',
+        },
+    }
 
 # Scoring machine API key
-# WARNING: 生产环境应使用强随机密钥并通过环境变量注入
-SCORING_MACHINE_API_KEY = 'scoring-machine-secret-key-2026'
+SCORING_MACHINE_API_KEY = os.environ.get(
+    'SCORING_MACHINE_API_KEY', 'scoring-machine-secret-key-2026'
+)

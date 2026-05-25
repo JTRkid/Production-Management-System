@@ -23,6 +23,7 @@ media/
 # 环境变量
 .env
 .env.*
+!.env.example
 
 # IDE
 .vscode/

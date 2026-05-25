@@ -1,21 +1,66 @@
 version: "3.8"
 
 services:
+  mysql:
+    image: mysql:8.0
+    container_name: prod-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-prod_mgmt}
+      MYSQL_USER: ${MYSQL_USER:-prod_user}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    volumes:
+      - mysql_data:/var/lib/mysql
+    command: >
+      --default-authentication-plugin=mysql_native_password
+      --character-set-server=utf8mb4
+      --collation-server=utf8mb4_unicode_ci
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: prod-redis
+    restart: unless-stopped
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   backend:
     build: ./backend
     container_name: prod-backend
-    volumes:
-      - ./backend/db.sqlite3:/app/db.sqlite3       # SQLite 数据持久化
-      - ./backend/media:/app/media                   # 上传文件持久化
-    environment:
-      - DJANGO_SETTINGS_MODULE=teach_platform.settings
     restart: unless-stopped
+    env_file:
+      - .env
+    volumes:
+      - ./backend/media:/app/media
+      - static_files:/app/staticfiles
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
 
   frontend:
     build: ./frontend
     container_name: prod-frontend
+    restart: unless-stopped
     ports:
-      - "8080:80"
+      - "80:80"
+    volumes:
+      - static_files:/usr/share/nginx/html/static:ro
     depends_on:
       - backend
-    restart: unless-stopped
+
+volumes:
+  mysql_data:
+  redis_data:
+  static_files:

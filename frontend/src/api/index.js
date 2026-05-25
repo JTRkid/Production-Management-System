@@ -11,7 +11,10 @@
 import axios from 'axios'
 import { ElMessage } from 'element-plus'
 
-const BASE_URL = 'http://localhost:8000/api/v1'
+// 生产环境用相对路径（Nginx 反向代理），开发环境直连后端
+const BASE_URL = import.meta.env.PROD
+  ? '/api/v1'
+  : 'http://localhost:8000/api/v1'
 
 const api = axios.create({ baseURL: BASE_URL, timeout: 15000 })
 
@@ -234,9 +237,9 @@ export const transactionAPI = {
 }
 
 // ── 报表看板 ──
-export const dashboardAPI = {
-  overview: () => api.get('/dashboard/overview/'),
-  prodDaily: () => api.get('/dashboard/prod_daily/'),
-  completionRate: () => api.get('/dashboard/completion_rate/'),
-  qualityTrend: () => api.get('/dashboard/quality_trend/'),
+export const dashboardAPI = {                 // 导出一个对象，其他文件通过 import { dashboardAPI } from '@/api' 引用
+  overview: () => api.get('/dashboard/overview/'),      // GET 请求：获取首页看板概览数据
+  prodDaily: () => api.get('/dashboard/prod_daily/'),   // GET 请求：获取生产日报数据
+  completionRate: () => api.get('/dashboard/completion_rate/'),   // GET 请求：获取生产计划完成率数据
+  qualityTrend: () => api.get('/dashboard/quality_trend/'),   // GET 请求：获取质量趋势数据
 }
