@@ -1,0 +1,3 @@
+# Windows 批处理文件强制 CRLF
+*.cmd eol=crlf
+*.bat eol=crlf
