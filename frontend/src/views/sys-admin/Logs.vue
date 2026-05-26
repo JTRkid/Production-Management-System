@@ -45,12 +45,13 @@
     </el-table>
 
     <!-- 分页 -->
-    <div class="pagination-wrap">
+    <div class="page-pagination">
       <el-pagination
         v-model:current-page="query.page"
         v-model:page-size="query.page_size"
         :total="total"
         :page-sizes="[10, 20, 50]"
+        background
         layout="total, sizes, prev, pager, next, jumper"
         @size-change="handleSearch"
         @current-change="handleSearch"
@@ -115,16 +116,8 @@ async function fetchData() {
 onMounted(() => fetchData())
 </script>
 
-<style>
-.toolbar {
-  display: flex; justify-content: space-between; align-items: center;
-}
-
+<style scoped>
 .toolbar__left {
   display: flex; align-items: center;
-}
-
-.pagination-wrap {
-  display: flex; justify-content: flex-end; margin-top: 16px;
 }
 </style>

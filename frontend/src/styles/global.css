@@ -1,14 +1,108 @@
-/* 全局过渡动画与公共样式 */
+/* ===== 配色体系 ===== */
+:root {
+  --primary: #2563EB;
+  --primary-light: #DBEAFE;
+  --success: #16A34A;
+  --warning: #D97706;
+  --danger: #DC2626;
+  --info: #6B7280;
+  --text-main: #111827;
+  --text-body: #374151;
+  --text-muted: #9CA3AF;
+  --border: #E5E7EB;
+  --bg-page: #F3F4F6;
+  --bg-white: #FFFFFF;
+  --radius: 10px;
+  --shadow: 0 1px 3px rgba(0,0,0,.1), 0 1px 2px rgba(0,0,0,.06);
+  --shadow-md: 0 4px 6px rgba(0,0,0,.07), 0 2px 4px rgba(0,0,0,.06);
+  --shadow-lg: 0 10px 15px rgba(0,0,0,.1), 0 4px 6px rgba(0,0,0,.05);
+  --el-border-radius-base: 10px;
+  --el-border-radius-small: 8px;
+}
 
-/* 页面进入/离开动画 */
+/* ===== 页面卡片 ===== */
+.page-card {
+  background: var(--bg-white);
+  border-radius: var(--radius);
+  padding: 24px;
+  box-shadow: var(--shadow);
+}
+
+/* ===== 工具栏 ===== */
+.page-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+.toolbar-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.toolbar-left {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+/* ===== 分页 ===== */
+.page-pagination,
+.pagination-wrap {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 20px;
+}
+
+/* ===== Element Plus 覆盖 ===== */
+
+/* 表格 */
+.el-table th.el-table__cell {
+  background: #F9FAFB !important;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+/* 对话框 */
+.el-dialog {
+  border-radius: 14px !important;
+}
+.el-dialog__header {
+  padding: 20px 24px 16px;
+  border-bottom: 1px solid var(--border);
+  margin-right: 0;
+}
+.el-dialog__body {
+  padding: 24px;
+}
+.el-dialog__footer {
+  padding: 16px 24px 20px;
+  border-top: 1px solid var(--border);
+}
+
+/* 标签 */
+.el-tag {
+  border-radius: 6px;
+}
+
+/* 动画 */
 .page-enter-active {
-  animation: pageIn .35s ease-out;
+  animation: pageIn .3s ease-out;
 }
 .page-leave-active {
   animation: pageOut .2s ease-in;
 }
 @keyframes pageIn {
-  from { opacity: 0; transform: translateY(12px); }
+  from { opacity: 0; transform: translateY(8px); }
   to { opacity: 1; transform: translateY(0); }
 }
 @keyframes pageOut {
@@ -16,110 +110,9 @@
   to { opacity: 0; }
 }
 
-/* 淡入动画 */
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-/* 上滑入 */
-@keyframes slideUp {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-/* 缩放入 */
-@keyframes scaleIn {
-  from { opacity: 0; transform: scale(.92); }
-  to { opacity: 1; transform: scale(1); }
-}
-
-/* 卡片交错动画 */
-@keyframes cardStagger {
-  from { opacity: 0; transform: translateY(16px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-/* 脉冲动画 */
-@keyframes pulse {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.05); }
-}
-
-/* 渐变背景动画 */
-@keyframes gradientShift {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
-}
-
-/* 数字跳动 */
-@keyframes countUp {
-  from { opacity: 0; transform: translateY(-10px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-/* 通用卡片悬停效果 */
-.hover-lift {
-  transition: all .3s cubic-bezier(.4,0,.2,1);
-}
-.hover-lift:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(0,0,0,.08);
-}
-
-/* 通用过渡 */
 .fade-enter-active, .fade-leave-active {
-  transition: opacity .3s ease;
+  transition: opacity .2s ease;
 }
 .fade-enter-from, .fade-leave-to {
   opacity: 0;
-}
-
-/* 列表项动画（配合 v-move） */
-.list-enter-active {
-  transition: all .4s ease;
-}
-.list-leave-active {
-  transition: all .25s ease;
-}
-.list-enter-from {
-  opacity: 0;
-  transform: translateX(-20px);
-}
-.list-leave-to {
-  opacity: 0;
-  transform: translateX(20px);
-}
-
-/* Element Plus 覆盖 — 圆角统一 */
-:root {
-  --el-border-radius-base: 8px;
-  --el-border-radius-small: 6px;
-}
-
-/* 卡片阴影增强 */
-.el-card {
-  transition: all .3s ease;
-}
-.el-card:hover {
-  box-shadow: 0 4px 16px rgba(0,0,0,.06);
-}
-
-/* 菜单项过渡 */
-.el-menu-item {
-  transition: all .25s ease;
-}
-
-/* 表格行悬停动画 */
-.el-table tbody tr {
-  transition: background-color .2s ease;
-}
-
-/* 按钮波纹效果 */
-.el-button {
-  transition: all .25s ease;
-}
-.el-button:active {
-  transform: scale(.97);
 }

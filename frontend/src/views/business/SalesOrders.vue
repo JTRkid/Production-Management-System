@@ -74,7 +74,6 @@
             v-if="row.status === 'draft'"
             link
             type="warning"
-            size="small"
             @click="handleApprove(row.id)"
           >
             审批
@@ -83,12 +82,11 @@
             v-if="['draft', 'approved'].includes(row.status)"
             link
             type="danger"
-            size="small"
             @click="handleCancel(row.id)"
           >
             取消
           </el-button>
-          <el-button link type="primary" size="small" @click="openDialog(row)">编辑</el-button>
+          <el-button link type="primary" @click="openDialog(row)">编辑</el-button>
           <el-popconfirm
             title="确定要删除该销售单吗？"
             confirm-button-text="删除"
@@ -96,7 +94,7 @@
             @confirm="handleDelete(row.id)"
           >
             <template #reference>
-              <el-button link type="danger" size="small">删除</el-button>
+              <el-button link type="danger">删除</el-button>
             </template>
           </el-popconfirm>
         </template>
@@ -444,38 +442,3 @@ onMounted(() => {
   fetchData()
 })
 </script>
-
-<style scoped>
-.page-card {
-  background: #fff;
-  border-radius: 8px;
-  padding: 20px;
-}
-
-.page-toolbar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 12px;
-}
-
-.toolbar-left {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 12px;
-}
-
-.toolbar-actions {
-  display: flex;
-  gap: 10px;
-  align-items: center;
-}
-
-.page-pagination {
-  display: flex;
-  justify-content: flex-end;
-  margin-top: 16px;
-}
-</style>

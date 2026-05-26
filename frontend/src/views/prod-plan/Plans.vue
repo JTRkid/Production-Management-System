@@ -52,25 +52,27 @@
       <el-table-column prop="created_by_name" label="创建人" width="100" />
       <el-table-column label="操作" width="260" fixed="right">
         <template #default="{ row }">
-          <el-button v-if="row.status === 'draft'" type="warning" size="small" @click="handleApprove(row)">审批</el-button>
-          <el-button v-if="row.status === 'approved'" type="success" size="small" @click="handleRelease(row)">下达</el-button>
-          <el-button v-if="row.status === 'approved'" type="danger" size="small" @click="handleCancel(row)">取消</el-button>
-          <el-button v-if="row.status === 'draft'" type="primary" size="small" @click="openDialog(row)">编辑</el-button>
-          <el-button v-if="row.status === 'draft'" type="danger" size="small" @click="handleDelete(row)">删除</el-button>
+          <el-button v-if="row.status === 'draft'" link type="warning" @click="handleApprove(row)">审批</el-button>
+          <el-button v-if="row.status === 'approved'" link type="success" @click="handleRelease(row)">下达</el-button>
+          <el-button v-if="row.status === 'approved'" link type="danger" @click="handleCancel(row)">取消</el-button>
+          <el-button v-if="row.status === 'draft'" link type="primary" @click="openDialog(row)">编辑</el-button>
+          <el-button v-if="row.status === 'draft'" link type="danger" @click="handleDelete(row)">删除</el-button>
         </template>
       </el-table-column>
     </el-table>
 
     <!-- 分页 -->
-    <el-pagination
-      v-model:current-page="query.page"
-      v-model:page-size="query.page_size"
-      :total="total"
-      layout="total, sizes, prev, pager, next, jumper"
-      style="margin-top:16px; justify-content:flex-end"
-      @current-change="fetchData"
-      @size-change="fetchData"
-    />
+    <div class="page-pagination">
+      <el-pagination
+        v-model:current-page="query.page"
+        v-model:page-size="query.page_size"
+        :total="total"
+        background
+        layout="total, sizes, prev, pager, next, jumper"
+        @current-change="fetchData"
+        @size-change="fetchData"
+      />
+    </div>
 
     <!-- 新增/编辑弹窗 -->
     <el-dialog v-model="dialogVisible" :title="isEdit ? '编辑计划' : '新增计划'" width="560px">
@@ -298,7 +300,3 @@ onMounted(() => {
   fetchData()
 })
 </script>
-
-<style scoped>
-.page-card { background: #fff; border-radius: 8px; padding: 20px; }
-</style>

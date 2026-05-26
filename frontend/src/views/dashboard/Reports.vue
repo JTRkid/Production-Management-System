@@ -6,7 +6,7 @@
           <template #header>
             <div class="report-header">
               <span>今日生产数据 — {{ dailyData.date || '-' }}</span>
-              <el-button text type="primary" @click="fetchDaily" :icon="Refresh">刷新</el-button>
+              <el-button link type="primary" @click="fetchDaily" :icon="Refresh">刷新</el-button>
             </div>
           </template>
           <el-row :gutter="20">
@@ -143,7 +143,7 @@ function onTabChange(tab) {
 onMounted(() => fetchDaily())
 </script>
 
-<style>
+<style scoped>
 .report-header {
   display: flex; justify-content: space-between; align-items: center;
 }

@@ -22,15 +22,17 @@
     </el-table>
 
     <!-- 分页 -->
-    <el-pagination
-      v-model:current-page="query.page"
-      v-model:page-size="query.page_size"
-      :total="total"
-      layout="total, sizes, prev, pager, next, jumper"
-      style="margin-top:16px; justify-content:flex-end"
-      @current-change="fetchData"
-      @size-change="fetchData"
-    />
+    <div class="page-pagination">
+      <el-pagination
+        v-model:current-page="query.page"
+        v-model:page-size="query.page_size"
+        :total="total"
+        background
+        layout="total, sizes, prev, pager, next, jumper"
+        @current-change="fetchData"
+        @size-change="fetchData"
+      />
+    </div>
   </div>
 </template>
 
@@ -81,7 +83,3 @@ function resetQuery() {
 // ── 生命周期 ──
 onMounted(() => fetchData())
 </script>
-
-<style scoped>
-.page-card { background: #fff; border-radius: 8px; padding: 20px; }
-</style>

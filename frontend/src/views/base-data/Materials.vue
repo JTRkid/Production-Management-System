@@ -56,12 +56,13 @@
     </el-table>
 
     <!-- 分页 -->
-    <div style="margin-top: 16px; text-align: right">
+    <div class="page-pagination">
       <el-pagination
         v-model:current-page="pagination.page"
         v-model:page-size="pagination.page_size"
         :total="pagination.total"
         :page-sizes="[10, 20, 50, 100]"
+        background
         layout="total, sizes, prev, pager, next, jumper"
         @size-change="fetchData"
         @current-change="fetchData"
@@ -76,7 +77,7 @@
       :close-on-click-modal="false"
       @closed="handleDialogClosed"
     >
-      <el-form ref="formRef" :model="form" :rules="rules" label-width="90px">
+      <el-form ref="formRef" :model="form" :rules="rules" label-width="100px">
         <el-form-item label="物料编码" prop="material_code">
           <el-input v-model="form.material_code" placeholder="请输入物料编码" />
         </el-form-item>
@@ -304,7 +305,3 @@ async function handleSubmit() {
 // ── 生命周期 ──
 onMounted(() => fetchData())
 </script>
-
-<style>
-.page-card { background: #fff; border-radius: 8px; padding: 20px; }
-</style>

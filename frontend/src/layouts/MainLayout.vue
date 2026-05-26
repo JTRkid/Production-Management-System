@@ -10,19 +10,19 @@
         :default-active="activeMenu"
         :collapse="isCollapse"
         :collapse-transition="false"
-        background-color="#1a1a2e"
-        text-color="#a0aec0"
-        active-text-color="#409EFF"
+        background-color="#fff"
+        text-color="#374151"
+        active-text-color="#2563EB"
         @select="handleMenuSelect"
       >
         <el-menu-item index="/dashboard">
-          <el-icon><DataAnalysis /></el-icon>
+          <el-icon class="mi mi--blue"><Odometer /></el-icon>
           <span>生产看板</span>
         </el-menu-item>
 
         <el-sub-menu index="sys-admin">
           <template #title>
-            <el-icon><Setting /></el-icon>
+            <el-icon class="mi mi--gray"><Tools /></el-icon>
             <span>系统管理</span>
           </template>
           <el-menu-item index="/sys-admin/users">用户管理</el-menu-item>
@@ -32,7 +32,7 @@
 
         <el-sub-menu index="business">
           <template #title>
-            <el-icon><Document /></el-icon>
+            <el-icon class="mi mi--green"><Briefcase /></el-icon>
             <span>业务管理</span>
           </template>
           <el-menu-item index="/business/customers">客户管理</el-menu-item>
@@ -43,7 +43,7 @@
 
         <el-sub-menu index="base-data">
           <template #title>
-            <el-icon><Collection /></el-icon>
+            <el-icon class="mi mi--purple"><Coin /></el-icon>
             <span>基础数据</span>
           </template>
           <el-menu-item index="/base-data/materials">物料主数据</el-menu-item>
@@ -54,18 +54,18 @@
         </el-sub-menu>
 
         <el-menu-item index="/prod-plan/plans">
-          <el-icon><Calendar /></el-icon>
+          <el-icon class="mi mi--orange"><Calendar /></el-icon>
           <span>生产计划</span>
         </el-menu-item>
 
         <el-menu-item index="/work-order/list">
-          <el-icon><Tickets /></el-icon>
+          <el-icon class="mi mi--cyan"><DocumentCopy /></el-icon>
           <span>工单管理</span>
         </el-menu-item>
 
         <el-sub-menu index="prod-track">
           <template #title>
-            <el-icon><TrendCharts /></el-icon>
+            <el-icon class="mi mi--pink"><Monitor /></el-icon>
             <span>过程跟踪</span>
           </template>
           <el-menu-item index="/prod-track/reports">报工记录</el-menu-item>
@@ -74,7 +74,7 @@
 
         <el-sub-menu index="quality">
           <template #title>
-            <el-icon><Checked /></el-icon>
+            <el-icon class="mi mi--teal"><CircleCheck /></el-icon>
             <span>质量管理</span>
           </template>
           <el-menu-item index="/quality/standards">检验标准</el-menu-item>
@@ -83,7 +83,7 @@
 
         <el-sub-menu index="inventory">
           <template #title>
-            <el-icon><Box /></el-icon>
+            <el-icon class="mi mi--amber"><Goods /></el-icon>
             <span>库存管理</span>
           </template>
           <el-menu-item index="/inventory/warehouses">仓库管理</el-menu-item>
@@ -92,7 +92,7 @@
         </el-sub-menu>
 
         <el-menu-item index="/dashboard/reports">
-          <el-icon><PieChart /></el-icon>
+          <el-icon class="mi mi--indigo"><DataLine /></el-icon>
           <span>生产报表</span>
         </el-menu-item>
       </el-menu>
@@ -209,13 +209,90 @@ async function changePassword() {
 
 <style scoped>
 .layout-container { height: 100vh; }
-.aside { background-color: #1a1a2e; overflow-y: auto; }
-.logo { display: flex; align-items: center; gap: 8px; padding: 16px 20px; color: #fff; cursor: pointer; }
-.logo-text { font-size: 16px; font-weight: 600; white-space: nowrap; }
-.header { display: flex; align-items: center; justify-content: space-between; background: #fff; border-bottom: 1px solid #e4e7ed; height: 56px; padding: 0 16px; }
-.header-left { display: flex; align-items: center; gap: 12px; }
-.collapse-btn { cursor: pointer; color: #606266; }
-.header-right { display: flex; align-items: center; gap: 12px; }
-.user-info { cursor: pointer; display: flex; align-items: center; gap: 4px; }
-.main-content { background: #f0f2f5; padding: 16px; min-height: calc(100vh - 56px); }
+.aside {
+  background-color: #fff;
+  overflow-y: auto;
+  overflow-x: hidden;
+  border-right: 1px solid var(--border);
+}
+.aside::-webkit-scrollbar { width: 4px; }
+.aside::-webkit-scrollbar-thumb { background: #D1D5DB; border-radius: 2px; }
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 18px 20px;
+  color: var(--text-main);
+  cursor: pointer;
+  border-bottom: 1px solid var(--border);
+}
+.logo-text {
+  font-size: 15px;
+  font-weight: 700;
+  white-space: nowrap;
+  letter-spacing: 1px;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #fff;
+  border-bottom: 1px solid var(--border);
+  height: 56px;
+  padding: 0 20px;
+}
+.header-left { display: flex; align-items: center; gap: 14px; }
+.collapse-btn { cursor: pointer; color: #6B7280; padding: 4px; border-radius: 6px; transition: background .2s; }
+.collapse-btn:hover { background: #F3F4F6; }
+.header-right { display: flex; align-items: center; gap: 14px; }
+.user-info {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  color: var(--text-body);
+}
+.user-info:hover { color: var(--primary); }
+
+.main-content {
+  background: var(--bg-page);
+  padding: 20px;
+  min-height: calc(100vh - 56px);
+}
+
+/* 菜单图标 — 纯色无背景 */
+.mi { font-size: 20px; margin-right: 8px; vertical-align: middle; }
+.mi--blue   { color: #2563EB; }
+.mi--gray   { color: #6B7280; }
+.mi--green  { color: #16A34A; }
+.mi--purple { color: #7C3AED; }
+.mi--orange { color: #D97706; }
+.mi--cyan   { color: #0891B2; }
+.mi--pink   { color: #DB2777; }
+.mi--teal   { color: #0D9488; }
+.mi--amber  { color: #B45309; }
+.mi--indigo { color: #4F46E5; }
+
+/* 菜单项样式 */
+:deep(.el-menu-item) {
+  border-left: 3px solid transparent;
+  transition: all .2s ease;
+}
+:deep(.el-menu-item:hover) {
+  background: #F3F4F6 !important;
+}
+:deep(.el-menu-item.is-active) {
+  border-left-color: var(--primary);
+  background: var(--primary-light) !important;
+}
+:deep(.el-sub-menu__title) {
+  border-left: 3px solid transparent;
+  transition: all .2s ease;
+}
+:deep(.el-sub-menu__title:hover) {
+  background: #F3F4F6 !important;
+}
 </style>

@@ -58,27 +58,29 @@
       <el-table-column prop="created_at" label="创建时间" width="160" />
       <el-table-column label="操作" width="280" fixed="right">
         <template #default="{ row }">
-          <el-button v-if="row.status === 'pending'" type="warning" size="small" @click="handleDispatch(row)">派工</el-button>
-          <el-button v-if="row.status === 'dispatched'" type="success" size="small" @click="handleStart(row)">开工</el-button>
-          <el-button v-if="row.status === 'in_progress'" type="primary" size="small" @click="handleComplete(row)">完工</el-button>
-          <el-button v-if="row.status === 'in_progress'" type="warning" size="small" @click="openReport(row)">报工</el-button>
-          <el-button v-if="row.status === 'completed'" type="info" size="small" @click="handleClose(row)">关闭</el-button>
-          <el-button v-if="row.status === 'pending'" type="primary" size="small" @click="openDialog(row)">编辑</el-button>
-          <el-button v-if="row.status === 'pending'" type="danger" size="small" @click="handleDelete(row)">删除</el-button>
+          <el-button v-if="row.status === 'pending'" link type="warning" @click="handleDispatch(row)">派工</el-button>
+          <el-button v-if="row.status === 'dispatched'" link type="success" @click="handleStart(row)">开工</el-button>
+          <el-button v-if="row.status === 'in_progress'" link type="primary" @click="handleComplete(row)">完工</el-button>
+          <el-button v-if="row.status === 'in_progress'" link type="warning" @click="openReport(row)">报工</el-button>
+          <el-button v-if="row.status === 'completed'" link type="info" @click="handleClose(row)">关闭</el-button>
+          <el-button v-if="row.status === 'pending'" link type="primary" @click="openDialog(row)">编辑</el-button>
+          <el-button v-if="row.status === 'pending'" link type="danger" @click="handleDelete(row)">删除</el-button>
         </template>
       </el-table-column>
     </el-table>
 
     <!-- 分页 -->
-    <el-pagination
-      v-model:current-page="query.page"
-      v-model:page-size="query.page_size"
-      :total="total"
-      layout="total, sizes, prev, pager, next, jumper"
-      style="margin-top:16px; justify-content:flex-end"
-      @current-change="fetchData"
-      @size-change="fetchData"
-    />
+    <div class="page-pagination">
+      <el-pagination
+        v-model:current-page="query.page"
+        v-model:page-size="query.page_size"
+        :total="total"
+        background
+        layout="total, sizes, prev, pager, next, jumper"
+        @current-change="fetchData"
+        @size-change="fetchData"
+      />
+    </div>
 
     <!-- 新增/编辑弹窗 -->
     <el-dialog v-model="dialogVisible" :title="isEdit ? '编辑工单' : '新增工单'" width="560px">
@@ -398,7 +400,3 @@ onMounted(() => {
   fetchData()
 })
 </script>
-
-<style scoped>
-.page-card { background: #fff; border-radius: 8px; padding: 20px; }
-</style>

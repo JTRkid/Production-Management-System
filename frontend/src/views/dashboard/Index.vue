@@ -1,11 +1,11 @@
 <template>
   <div class="page-card">
     <!-- 统计卡片 -->
-    <el-row :gutter="20" class="stat-row">
+    <el-row :gutter="16" class="stat-row">
       <el-col :span="6">
         <div class="stat-card stat-card--blue">
           <div class="stat-card__icon">
-            <el-icon :size="32"><DataAnalysis /></el-icon>
+            <el-icon :size="28"><DataAnalysis /></el-icon>
           </div>
           <div class="stat-card__info">
             <div class="stat-card__label">总工单数</div>
@@ -16,7 +16,7 @@
       <el-col :span="6">
         <div class="stat-card stat-card--orange">
           <div class="stat-card__icon">
-            <el-icon :size="32"><TrendCharts /></el-icon>
+            <el-icon :size="28"><TrendCharts /></el-icon>
           </div>
           <div class="stat-card__info">
             <div class="stat-card__label">进行中工单</div>
@@ -27,7 +27,7 @@
       <el-col :span="6">
         <div class="stat-card stat-card--green">
           <div class="stat-card__icon">
-            <el-icon :size="32"><Checked /></el-icon>
+            <el-icon :size="28"><Checked /></el-icon>
           </div>
           <div class="stat-card__info">
             <div class="stat-card__label">已完成工单</div>
@@ -38,7 +38,7 @@
       <el-col :span="6">
         <div class="stat-card stat-card--red">
           <div class="stat-card__icon">
-            <el-icon :size="32"><WarningFilled /></el-icon>
+            <el-icon :size="28"><WarningFilled /></el-icon>
           </div>
           <div class="stat-card__info">
             <div class="stat-card__label">缺陷率</div>
@@ -49,32 +49,26 @@
     </el-row>
 
     <!-- 图表区域 -->
-    <el-row :gutter="20" style="margin-top: 20px">
+    <el-row :gutter="16" class="chart-row">
       <el-col :span="10">
-        <el-card shadow="never">
-          <template #header>
-            <div class="card-header"><span>工单状态分布</span></div>
-          </template>
+        <div class="page-card">
+          <div class="card-header">工单状态分布</div>
           <div ref="statusChartRef" style="height: 300px"></div>
-        </el-card>
+        </div>
       </el-col>
       <el-col :span="14">
-        <el-card shadow="never">
-          <template #header>
-            <div class="card-header"><span>近30天完成率趋势</span></div>
-          </template>
+        <div class="page-card">
+          <div class="card-header">近30天完成率趋势</div>
           <div ref="trendChartRef" style="height: 300px"></div>
-        </el-card>
+        </div>
       </el-col>
     </el-row>
 
     <!-- 详细面板 -->
-    <el-row :gutter="20" style="margin-top: 20px">
+    <el-row :gutter="16">
       <el-col :span="8">
-        <el-card shadow="never">
-          <template #header>
-            <div class="card-header"><span>月度产量</span></div>
-          </template>
+        <div class="page-card">
+          <div class="card-header">月度产量</div>
           <div class="detail-item">
             <span class="detail-item__label">本月完成数量</span>
             <span class="detail-item__value">{{ overview.month_completed_qty ?? '-' }}</span>
@@ -83,28 +77,24 @@
             <span class="detail-item__label">本月销售额</span>
             <span class="detail-item__value">{{ formatMoney(overview.month_sales_amount) }}</span>
           </div>
-        </el-card>
+        </div>
       </el-col>
       <el-col :span="8">
-        <el-card shadow="never">
-          <template #header>
-            <div class="card-header"><span>待处理</span></div>
-          </template>
+        <div class="page-card">
+          <div class="card-header">待处理</div>
           <div class="detail-item">
             <span class="detail-item__label">逾期工单</span>
-            <span class="detail-item__value" style="color: #f56c6c">{{ overview.overdue_wo ?? '-' }}</span>
+            <span class="detail-item__value" style="color: #DC2626">{{ overview.overdue_wo ?? '-' }}</span>
           </div>
           <div class="detail-item">
             <span class="detail-item__label">待处理订单</span>
             <span class="detail-item__value">{{ overview.pending_orders ?? '-' }}</span>
           </div>
-        </el-card>
+        </div>
       </el-col>
       <el-col :span="8">
-        <el-card shadow="never">
-          <template #header>
-            <div class="card-header"><span>今日生产</span></div>
-          </template>
+        <div class="page-card">
+          <div class="card-header">今日生产</div>
           <div class="detail-item">
             <span class="detail-item__label">计划产量</span>
             <span class="detail-item__value">{{ dailyData.plan_qty ?? '-' }}</span>
@@ -113,7 +103,7 @@
             <span class="detail-item__label">实际产量</span>
             <span class="detail-item__value">{{ dailyData.actual_qty ?? '-' }}</span>
           </div>
-        </el-card>
+        </div>
       </el-col>
     </el-row>
   </div>
@@ -258,29 +248,69 @@ onBeforeUnmount(() => {
 })
 </script>
 
-<style>
-.stat-row { margin-bottom: 8px; }
+<style scoped>
+.stat-row { margin-bottom: 16px; }
+.chart-row { margin-bottom: 16px; }
 
+/* 统计卡片 — 白底 + 底部色线 */
 .stat-card {
-  display: flex; align-items: center; gap: 16px;
-  padding: 20px; border-radius: 8px; color: #fff;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 20px;
+  background: var(--bg-white);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  border-bottom: 3px solid transparent;
+  transition: box-shadow .2s ease;
 }
-.stat-card--blue   { background: linear-gradient(135deg, #409eff, #337ecc); }
-.stat-card--orange { background: linear-gradient(135deg, #e6a23c, #d48806); }
-.stat-card--green  { background: linear-gradient(135deg, #67c23a, #529b2e); }
-.stat-card--red    { background: linear-gradient(135deg, #f56c6c, #c45656); }
+.stat-card:hover { box-shadow: var(--shadow-md); }
+.stat-card--blue   { border-bottom-color: #2563EB; }
+.stat-card--orange { border-bottom-color: #D97706; }
+.stat-card--green  { border-bottom-color: #16A34A; }
+.stat-card--red    { border-bottom-color: #DC2626; }
 
-.stat-card__icon { flex-shrink: 0; opacity: 0.8; }
-.stat-card__label { font-size: 13px; opacity: 0.85; margin-bottom: 6px; }
-.stat-card__value { font-size: 26px; font-weight: 700; }
+/* 图标 — 纯色 */
+.stat-card__icon {
+  flex-shrink: 0;
+  font-size: 32px;
+}
+.stat-card--blue .stat-card__icon   { color: #2563EB; }
+.stat-card--orange .stat-card__icon { color: #D97706; }
+.stat-card--green .stat-card__icon  { color: #16A34A; }
+.stat-card--red .stat-card__icon    { color: #DC2626; }
 
+.stat-card__label {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+}
+.stat-card__value {
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--text-main);
+  line-height: 1;
+}
+
+/* 卡片头部 */
+.card-header {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-main);
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+/* 详情条目 */
 .detail-item {
-  display: flex; justify-content: space-between; align-items: center;
-  padding: 10px 0; border-bottom: 1px solid #f0f0f0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid #F3F4F6;
 }
 .detail-item:last-child { border-bottom: none; }
-.detail-item__label { color: #909399; font-size: 14px; }
-.detail-item__value { font-size: 18px; font-weight: 600; color: #303133; }
-
-.card-header { font-size: 15px; font-weight: 600; }
+.detail-item__label { color: var(--text-muted); font-size: 14px; }
+.detail-item__value { font-size: 18px; font-weight: 700; color: var(--text-main); }
 </style>

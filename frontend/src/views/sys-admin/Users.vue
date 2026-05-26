@@ -38,20 +38,21 @@
       <el-table-column prop="date_joined" label="创建时间" width="170" />
       <el-table-column label="操作" width="220" fixed="right">
         <template #default="{ row }">
-          <el-button text type="primary" size="small" @click="openDialog(row)">编辑</el-button>
-          <el-button text type="warning" size="small" @click="handleResetPassword(row)">重置密码</el-button>
-          <el-button text type="danger" size="small" @click="handleDelete(row)">删除</el-button>
+          <el-button link type="primary" @click="openDialog(row)">编辑</el-button>
+          <el-button link type="warning" @click="handleResetPassword(row)">重置密码</el-button>
+          <el-button link type="danger" @click="handleDelete(row)">删除</el-button>
         </template>
       </el-table-column>
     </el-table>
 
     <!-- 分页 -->
-    <div class="pagination-wrap">
+    <div class="page-pagination">
       <el-pagination
         v-model:current-page="query.page"
         v-model:page-size="query.page_size"
         :total="total"
         :page-sizes="[10, 20, 50]"
+        background
         layout="total, sizes, prev, pager, next, jumper"
         @size-change="handleSearch"
         @current-change="handleSearch"
@@ -65,7 +66,7 @@
       width="520px"
       :close-on-click-modal="false"
     >
-      <el-form ref="formRef" :model="form" :rules="rules" label-width="80px">
+      <el-form ref="formRef" :model="form" :rules="rules" label-width="100px">
         <el-form-item label="用户名" prop="username">
           <el-input v-model="form.username" :disabled="isEdit" placeholder="请输入用户名" />
         </el-form-item>
@@ -295,13 +296,3 @@ async function handleSubmit() {
   }
 }
 </script>
-
-<style>
-.toolbar {
-  display: flex; justify-content: space-between; align-items: center;
-}
-
-.pagination-wrap {
-  display: flex; justify-content: flex-end; margin-top: 16px;
-}
-</style>

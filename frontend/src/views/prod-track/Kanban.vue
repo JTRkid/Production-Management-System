@@ -116,8 +116,6 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-.page-card { background: #fff; border-radius: 8px; padding: 20px; }
-
 .stat-card {
   background: linear-gradient(135deg, #f5f7fa 0%, #e4e7ed 100%);
   border-radius: 8px;
